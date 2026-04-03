@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Dashboard</title>
+        <style>
+            body{
+                background-color:#f0f2f5;
+                font-family:Arial;
+                margin:0px;
+                display:flex;
+                height:100vh;
+                justify-content:center;
+                align-items:center;
+    
+            }
+            h2{
+                text-align:center;
+            }
+            .container{
+                background-color:white;
+                width:500px;
+                padding:20px;
+                border-radius:12px;
+                box-shadow:0px 4px 20px rgba(0,0,0,0.2); 
+            }
+            .box{
+                display:flex;
+                gap:8px;
+                margin-bottom:15px;
+        
+            }
+            input{
+                flex:1;
+                padding:10px;
+                border:1px solid gray;
+                border-radius:6px;
+            }
+            input:focus{
+                outline:none;
+                border:2px solid blue;
+            }
+            button{
+                transition:0.2s;
+                border:none;
+                cursor:pointer;
+                background-color:blue;
+                color:white;
+                border-radius:6px;
+                padding:10px;
+            }
+            button:hover{
+                opacity:0.85;
+                transform:scale(1.05);
+            }
+            ul{
+                list-style-type:none;
+                padding:0px;
+            }
+            li{
+                transition:all 0.2s ease;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                background-color:#eee;
+                padding:10px;
+                border-radius:10px;
+                margin:8px 0px;
+            }
+            li:hover{
+                transform:scale(1.02);
+            }
+            li div{
+               display:flex;
+               gap:8px;
+        
+            }
+            li button:first-child{
+                background-color:#007bff;
+                padding:10px 15px;;
+            }
+            li button:first-child:hover{
+                background-color:#0056b3;
+            }
+            li button:last-child{
+                background-color:red;
+                padding:0px 10px;
+            }
+            li button:last-child:hover{
+                background-color:darkred;
+            }
+            #darktoggle{
+                position:absolute;
+                top:20px;
+                right:20px;
+                padding:8px 12px;
+                font-size:12px;
+                background-color:#1e1e1e;
+                color:white;
+            }
+            body.dark{
+                background-color:#121212;
+                color:white;
+            }
+            body.dark .container{
+                background-color:#1e1e1e;
+            }
+            body.dark input{
+                background-color:#2a2a2a;
+                color:white;
+                border:1px solid #555;
+            }
+            body.dark li{
+                background-color:#2a2a2a;
+                color:white;
+                border:1px solid #555;
+            }
+            .search{
+                display:flex;
+            }
+        </style>
+    <head>
+    <body>
+        <button id="darktoggle">🌙DarkMode</button>
+        <div class="container">
+        <h2 id ="welcome"></h2>
+        <div class="box">
+            <input type="text" id="taskinput" placeholder="Enter Task">
+            <input type="date" id="deadline">
+            <button onclick="addtask()">Add Task</button>
+        </div>
+        <div class="search">
+        <input placeholder="Search Tasks" type="text" id="search"></div>
+            <ul id="tasklist"></ul>
+        </div>
+        <script>
+            if(localStorage.getItem("loggedin")!=="true"){
+                alert("Please login first");
+                window.location.href=("login.html");
+            }
+            let currentuser=localStorage.getItem("email");
+            let key=currentuser+"_tasks";
+            let tasks=JSON.parse(localStorage.getItem(key))||[];
+            if(!Array.isArray(tasks)){
+                tasks=[];
+            }
+            let savedtheme=localStorage.getItem("theme");
+            if(savedtheme=="dark"){
+                document.body.classList.add("dark");
+            }
+            let togglebtn=document.getElementById("darktoggle");
+            togglebtn.onclick=function(){
+                document.body.classList.toggle("dark");
+                if(document.body.classList.contains("dark")){
+                    localStorage.setItem("theme","dark");
+                }
+                else{
+                    localStorage.setItem("theme","light");
+                }
+                if(document.body.classList.contains("dark")){
+                    togglebtn.innerText=("☀️LightMode");
+                }
+                else{
+                    togglebtn.innerText=("🌙DarkMode");
+                }
+            
+            };
+            
+            let searchinput=document.getElementById("search");
+            searchinput.oninput=function(){
+                displaytasks();
+            };
+            function loadpage(){
+                let name=localStorage.getItem("name");
+                document.getElementById("welcome").innerText="Welcome "+name.charAt(0).toUpperCase()+name.slice(1);
+                displaytasks();
+            }
+            function addtask(){
+                let task=document.getElementById("taskinput").value.trim();
+                let deadline=document.getElementById("deadline").value;
+                if (task===""){
+                    alert("Enter a task");
+                    return;
+                }
+                task=task.charAt(0).toUpperCase()+task.slice(1);
+                tasks.push({text:task,done:false,deadline:deadline});
+                localStorage.setItem(key,JSON.stringify(tasks));
+                document.getElementById("taskinput").value="";
+                document.getElementById("deadline").value="";
+                document.getElementById("taskinput").focus();
+                displaytasks();
+            }
+            function displaytasks(){
+                let searchval=document.getElementById("search").value.toLowerCase();
+                let list=document.getElementById("tasklist");
+                list.innerHTML="";
+                for(let i=0;i<tasks.length;i++){
+                    if(!tasks[i].text.toLowerCase().includes(searchval)){
+                        if(list.innerHTML===""){
+                            list.innerHTML="<p>No Matching Tasks</p>";
+                        }
+                        continue;
+                    }    
+                    let li=document.createElement("li");
+                    let date=new Date(tasks[i].deadline);
+                    let textspan=document.createElement("span");
+                    if(tasks[i].deadline!==""){
+                        textspan.innerText=tasks[i].text+"📅"+date.toDateString();
+                    }
+                    else{
+                        textspan.innerText=tasks[i].text+" (No Due Date Yet)";
+                    }
+                    li.appendChild(textspan);
+                    if(tasks[i].done){
+                        li.style.textDecoration="line-through";
+                    }
+                    li.onclick=function(){
+                        toggletask(i);
+                    }
+                    let editbtn=document.createElement("button");
+                    editbtn.innerText="Edit";
+                    editbtn.onclick=function(event){
+                        event.stopPropagation();
+                        edittask(i);
+                    }
+                    let delbtn=document.createElement("button");
+                    delbtn.innerText="X";
+                    delbtn.onclick=function(event){
+                        event.stopPropagation();
+                        deletetask(i);
+                    }
+                    let btncontainer=document.createElement("div");
+                    btncontainer.appendChild(editbtn);
+                    btncontainer.appendChild(delbtn);
+                    li.appendChild(btncontainer);
+                    list.appendChild(li);
+                }
+                if(tasks.length===0){
+                    list.innerHTML="<p>No Tasks Yet</p>";
+                }
+            }
+            function deletetask(index){
+                tasks.splice(index,1);
+                localStorage.setItem(key,JSON.stringify(tasks));
+                displaytasks();
+            }
+            function toggletask(index){
+                tasks[index].done=!tasks[index].done;
+                localStorage.setItem(key,JSON.stringify(tasks));
+                displaytasks();
+            }
+            function edittask(index){
+                let newtask=prompt("Edit Task:",tasks[index].text);
+                if(newtask===null||newtask.trim()===""){
+                    return;
+                }
+                newtask=newtask.charAt(0).toUpperCase()+newtask.slice(1);
+                tasks[index].text=newtask;
+                localStorage.setItem(key,JSON.stringify(tasks));
+                displaytasks();
+            }
+            loadpage();
+        </script>
+    </body>
+</html>
