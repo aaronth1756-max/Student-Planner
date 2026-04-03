@@ -63,7 +63,7 @@
                     alert("Login successful");
                     alert("Welcome "+storedname);
                     localStorage.setItem("loggedin","true");
-                    window.location.href=("dashboard.html");
+                    window.location.href=("./dashboard.html");
                     
                 }
                 else{
@@ -78,7 +78,7 @@
         <form onsubmit="validatelogin(); return false;">
             <input type="text" id="username" placeholder="username"><br>
             <input type="password" id="password" placeholder="password"><br>
-            <p>New user?<a href="register.html">Register here</a></p>
+            <p>New user?<a href="./register.html">Register here</a></p>
             <button type="button" onclick="validatelogin()">Login</button>
         </form>
     </div>
